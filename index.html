@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DCT Replacement Report Generator</title>
+  <style>
+    :root {
+      --primary: #1890ff;
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --border: #d9d9d9;
+      --text: #333333;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #555;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      height: 150px;
+      resize: vertical;
+      font-family: monospace;
+    }
+
+    .time-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .time-row label {
+      flex: 1;
+      margin-bottom: 0;
+      font-size: 0.82rem;
+    }
+
+    .time-row input[type="time"] {
+      width: 110px;
+      padding: 6px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+
+    button:hover { background-color: #40a9ff; }
+
+    .btn-now {
+      background-color: #13c2c2;
+      white-space: nowrap;
+    }
+
+    .btn-now:hover { background-color: #36cfc9; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      margin-top: 15px;
+    }
+
+    .btn-secondary {
+      background-color: #52c41a;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover { background-color: #73d13d; }
+
+    .btn-danger {
+      background-color: #ff4d4f;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
+
+    .btn-danger:hover { background-color: #ff7875; }
+
+    .output-area {
+      white-space: pre-wrap;
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.88rem;
+      min-height: 480px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Input Form -->
+  <div class="card">
+    <h2>1. Paste Ticket Message</h2>
+    
+    <div class="form-group">
+      <label>Date</label>
+      <input type="text" id="reportDate" placeholder="DD/MM/YYYY">
+    </div>
+
+    <div class="form-group">
+      <label>Paste Notification Block</label>
+      <textarea id="rawTicket" placeholder="Paste the 【整机故障换机通知】 text here..."></textarea>
+    </div>
+
+    <div class="section-header">
+      <strong>2. Event Timestamps</strong>
+      <button type="button" class="btn-danger" onclick="clearAllTimes()">Reset Times</button>
+    </div>
+
+    <div id="time-steps">
+      <div class="time-row">
+        <label>1. DCT chat</label>
+        <input type="time" id="t1">
+        <button type="button" class="btn-now" onclick="captureTime('t1')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>2. Titan respond</label>
+        <input type="time" id="t2">
+        <button type="button" class="btn-now" onclick="captureTime('t2')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>3. pass security</label>
+        <input type="time" id="t3">
+        <button type="button" class="btn-now" onclick="captureTime('t3')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>4. Titan start take out the backup CT/ST</label>
+        <input type="time" id="t4">
+        <button type="button" class="btn-now" onclick="captureTime('t4')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>5. Titan finish take out the backup CT/ST</label>
+        <input type="time" id="t5">
+        <button type="button" class="btn-now" onclick="captureTime('t5')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>6. Arrived at faulty rack</label>
+        <input type="time" id="t6">
+        <button type="button" class="btn-now" onclick="captureTime('t6')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>7. Titan start take out faulty CT/ST</label>
+        <input type="time" id="t7">
+        <button type="button" class="btn-now" onclick="captureTime('t7')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>8. Titan finish mount backup CT/ST</label>
+        <input type="time" id="t8">
+        <button type="button" class="btn-now" onclick="captureTime('t8')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>9. Titan go back to backup rack</label>
+        <input type="time" id="t9">
+        <button type="button" class="btn-now" onclick="captureTime('t9')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>10. Titan arrived at backup rack</label>
+        <input type="time" id="t10">
+        <button type="button" class="btn-now" onclick="captureTime('t10')">NOW</button>
+      </div>
+      <div class="time-row">
+        <label>11. Titan go out from datahall</label>
+        <input type="time" id="t11">
+        <button type="button" class="btn-now" onclick="captureTime('t11')">NOW</button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-submit" onclick="generateReport()">Generate Final Report</button>
+  </div>
+
+  <!-- Output Section -->
+  <div class="card">
+    <h2>3. Generated Report Output</h2>
+    <div id="output" class="output-area">Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".</div>
+    <button type="button" class="btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+  </div>
+</div>
+
+<script>
+  // Set date default to today in DD/MM/YYYY format
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  document.getElementById('reportDate').value = `${dd}/${mm}/${yyyy}`;
+
+  function captureTime(inputId) {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById(inputId).value = `${hours}:${minutes}`;
+  }
+
+  function clearAllTimes() {
+    for (let i = 1; i <= 11; i++) {
+      document.getElementById(`t${i}`).value = '';
+    }
+  }
+
+  function parseTicketText(rawText) {
+    const faultySN = (rawText.match(/故障SN[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+    
+    // Faulty Location Parsing
+    const faultyLocMatch = rawText.match(/故障机器位置[:：]\s*包间[:：]\s*([^,，]+)[,，]\s*机柜[:：]\s*([^,，]+)[,，]\s*机位[:：]\s*([0-9]+)/);
+    const faultyRoom = faultyLocMatch ? faultyLocMatch[1].trim() : '';
+    const faultyRack = faultyLocMatch ? faultyLocMatch[2].trim() : '';
+    const faultySlot = faultyLocMatch ? faultyLocMatch[3].trim() : '';
+
+    // Ticket No
+    const ticketMatch = rawText.match(/故障单号[:：]\s*银河Z单号[:：]\s*([A-Za-z0-9]+)/) || rawText.match(/([Zz][0-9]{15,})/);
+    const ticketNo = ticketMatch ? ticketMatch[1].trim() : '';
+
+    // Backup SN
+    const backupSN = (rawText.match(/备机SN[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+
+    // Backup Location Parsing
+    const backupLocMatch = rawText.match(/备机位置[:：]\s*包间[:：]\s*([^,，]+)[,，]\s*机柜[:：]\s*([^,，]+)[,，]\s*机位[:：]\s*([0-9]+)/);
+    const backupRoom = backupLocMatch ? backupLocMatch[1].trim() : '';
+    const backupRack = backupLocMatch ? backupLocMatch[2].trim() : '';
+    const backupSlot = backupLocMatch ? backupLocMatch[3].trim() : '';
+
+    return {
+      ticketNo,
+      faultySN,
+      faultyRoom,
+      faultyRack,
+      faultySlot,
+      backupSN,
+      backupRoom,
+      backupRack,
+      backupSlot
+    };
+  }
+
+  function generateReport() {
+    const dateStr = document.getElementById('reportDate').value.trim();
+    const rawText = document.getElementById('rawTicket').value;
+    
+    const parsed = parseTicketText(rawText);
+
+    const getTimeVal = (id) => document.getElementById(id).value.trim() || '--';
+
+    const t1 = getTimeVal('t1');
+    const t2 = getTimeVal('t2');
+    const t3 = getTimeVal('t3');
+    const t4 = getTimeVal('t4');
+    const t5 = getTimeVal('t5');
+    const t6 = getTimeVal('t6');
+    const t7 = getTimeVal('t7');
+    const t8 = getTimeVal('t8');
+    const t9 = getTimeVal('t9');
+    const t10 = getTimeVal('t10');
+    const t11 = getTimeVal('t11');
+
+    const cleanTicketBlock = rawText.trim() || `【整机故障换机通知】
+以下整机故障单已经安排备机，请尽快完成整机替换。
+故障SN：${parsed.faultySN}
+故障机器位置：包间：${parsed.faultyRoom}，机柜：${parsed.faultyRack}，机位：${parsed.faultySlot}
+故障单号：银河Z单号：${parsed.ticketNo}
+备机SN：${parsed.backupSN}
+备机位置：包间：${parsed.backupRoom}，机柜：${parsed.backupRack}，机位：${parsed.backupSlot}
+@所有人`;
+
+    const reportText = `Date: ${dateStr}
+
+1. DCT chat - ${t1}
+2. Titan respond - ${t2}
+3. pass security - ${t3}
+4. Titan start take out the backup CT/ST - ${t4}
+5. Titan finish take out the backup CT/ST - ${t5}
+6. Arrived at faulty rack - ${t6}
+7. Titan start take out faulty CT/ST - ${t7}
+8. Titan finish mount backup CT/ST - ${t8}
+9. Titan go back to backup rack - ${t9}
+10. Titan arrived at backup rack - ${t10}
+11. Titan go out from datahall - ${t11}
+
+Cust Ticket No: ${parsed.ticketNo}
+
+Backup SN: ${parsed.backupSN}
+Backup Location: ${parsed.backupRoom}, Rack: ${parsed.backupRack}, Slot: ${parsed.backupSlot}
+
+Faulty SN: ${parsed.faultySN}
+Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parsed.faultySlot}`;
+
+    document.getElementById('output').innerText = reportText;
+  }
+
+  function copyToClipboard() {
+    const text = document.getElementById('output').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Report copied to clipboard!');
+    }).catch(err => {
+      alert('Failed to copy: ' + err);
+    });
+  }
+</script>
+
+</body>
+</html>
