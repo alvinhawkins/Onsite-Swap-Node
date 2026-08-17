@@ -372,7 +372,7 @@
     <h2>3. Generated Report Output</h2>
     <div id="output" class="output-area">Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".</div>
     <button type="button" class="btn-secondary" onclick="copyToClipboard()">Copy Report</button>
-    <button type="button" class="btn-secondary" onclick="copyExcelTable()">Copy Excel Table</button>
+    <button type="button" class="btn-secondary" onclick="copyExcelTable()">Transfer to Excel</button>
 
     <div class="section-header">
       <strong>4. Calculation</strong>
@@ -619,16 +619,16 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     }
 
     const rows = [
-      [actualTimes[0]],
-      [actualTimes[1]],
-      [actualTimes[2]],
-      [actualTimes[3]],
-      [actualTimes[4]],
-      [actualTimes[5]],
-      [actualTimes[6]],
-      [actualTimes[7]],
-      [actualTimes[8]],
-      [actualTimes[9]],
+     // [actualTimes[0]],
+     // [actualTimes[1]],
+     // [actualTimes[2]],
+     // [actualTimes[3]],
+     // [actualTimes[4]],
+     // [actualTimes[5]],
+     // [actualTimes[6]],
+     // [actualTimes[7]],
+     // [actualTimes[8]],
+     // [actualTimes[9]],
     ];
 
     return rows
@@ -666,7 +666,7 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
 
     const text = buildExcelTable(dateStr, parsed, times);
     navigator.clipboard.writeText(text).then(() => {
-      showPopup('Copied', 'Excel-ready table copied to clipboard. Paste into Excel and it will split into columns.');
+      showPopup('Copied', 'Still Under Development');
     }).catch(err => {
       showPopup('Copy failed', 'Failed to copy Excel table: ' + err);
     });
