@@ -223,6 +223,65 @@
       font-weight: 500;
       color: #444;
     }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .popup-overlay.visible {
+      display: flex;
+    }
+
+    .popup-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      width: min(420px, 90vw);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .popup-box img {
+      width: 130px;
+      height: auto;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .popup-box h3 {
+      margin: 0 0 8px;
+      color: #222;
+      font-size: 1.1rem;
+    }
+
+    .popup-box p {
+      margin: 0;
+      color: #555;
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+
+    .popup-close {
+      margin-top: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -330,6 +389,15 @@
   </div>
   <div class="footer-created">Created by Syakir Aiman</div>
 </footer>
+
+<div id="popupOverlay" class="popup-overlay" aria-live="polite">
+  <div class="popup-box">
+    <img src="bromat.png" alt="Bromat logo">
+    <h3 id="popupTitle">Notice</h3>
+    <p id="popupMessage">Message</p>
+    <button type="button" class="popup-close" onclick="closePopup()">Close</button>
+  </div>
+</div>
 
 <script>
   // Set date default to today in DD/MM/YYYY format
@@ -568,6 +636,16 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
       .join('\n');
   }
 
+  function showPopup(title, message) {
+    document.getElementById('popupTitle').textContent = title;
+    document.getElementById('popupMessage').textContent = message;
+    document.getElementById('popupOverlay').classList.add('visible');
+  }
+
+  function closePopup() {
+    document.getElementById('popupOverlay').classList.remove('visible');
+  }
+
   function copyExcelTable() {
     const dateStr = document.getElementById('reportDate').value.trim();
     const rawText = document.getElementById('rawTicket').value;
@@ -588,18 +666,18 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
 
     const text = buildExcelTable(dateStr, parsed, times);
     navigator.clipboard.writeText(text).then(() => {
-      alert('Excel-ready table copied to clipboard. Paste into Excel and it will split into columns.');
+      showPopup('Copied', 'Excel-ready table copied to clipboard. Paste into Excel and it will split into columns.');
     }).catch(err => {
-      alert('Failed to copy Excel table: ' + err);
+      showPopup('Copy failed', 'Failed to copy Excel table: ' + err);
     });
   }
 
   function copyToClipboard() {
     const text = document.getElementById('output').innerText;
     navigator.clipboard.writeText(text).then(() => {
-      alert('Report copied to clipboard!');
+      showPopup('Copied', 'Report copied to clipboard!');
     }).catch(err => {
-      alert('Failed to copy: ' + err);
+      showPopup('Copy failed', 'Failed to copy: ' + err);
     });
   }
 </script>
