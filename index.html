@@ -510,29 +510,16 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     }
 
     const rows = [
-      ['Date', dateStr],
-      [],
-      ['Step', 'Actual Time'],
-      ['1', actualTimes[0]],
-      ['2', actualTimes[1]],
-      ['3', actualTimes[2]],
-      ['4', actualTimes[3]],
-      ['5', actualTimes[4]],
-      ['6', actualTimes[5]],
-      ['7', actualTimes[6]],
-      ['8', actualTimes[7]],
-      ['9', actualTimes[8]],
-      ['10', actualTimes[9]],
-      [],
-      ['Cust Ticket No', parsed.ticketNo],
-      ['Backup SN', parsed.backupSN],
-      ['Backup Location', parsed.backupRoom],
-      ['Backup Rack', parsed.backupRack],
-      ['Backup Slot', parsed.backupSlot],
-      ['Faulty SN', parsed.faultySN],
-      ['Faulty Location', parsed.faultyRoom],
-      ['Faulty Rack', parsed.faultyRack],
-      ['Faulty Slot', parsed.faultySlot]
+      [actualTimes[0]],
+      [actualTimes[1]],
+      [actualTimes[2]],
+      [actualTimes[3]],
+      [actualTimes[4]],
+      [actualTimes[5]],
+      [actualTimes[6]],
+      [actualTimes[7]],
+      [actualTimes[8]],
+      [actualTimes[9]],
     ];
 
     return rows
