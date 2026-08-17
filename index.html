@@ -348,16 +348,16 @@
   }
 
   const calculationSteps = [
-    { no: 1, label: 'DCT chat â†’ Titan respond', expected: '5 min', min: 0, max: 5 },
-    { no: 2, label: 'Titan respond â†’ pass security', expected: '10-15 min', min: 10, max: 15, reason: 'Waiting for security guard' },
-    { no: 3, label: 'pass security â†’ arrive backup rack', expected: '5-10 min', min: 5, max: 10 },
-    { no: 4, label: 'start â†’ finish take out backup CT/ST', expected: '5 min', min: 0, max: 5 },
-    { no: 5, label: 'backup rack â†’ faulty rack', expected: '10-15 min / time uncertain', min: 0, max: null },
-    { no: 6, label: 'arrive faulty rack â†’ start take out faulty CT/ST', expected: '5-10 min', min: 5, max: 10 },
-    { no: 7, label: 'start â†’ finish faulty CT/ST replacement', expected: '5 min', min: 0, max: 5 },
-    { no: 8, label: 'mount backup CT/ST â†’ go back backup rack', expected: '10-20 min', min: 10, max: 20 },
-    { no: 9, label: 'faulty rack â†’ backup rack', expected: '10-15 min / time uncertain', min: 0, max: null },
-    { no: 10, label: 'arrive backup rack â†’ go out datahall', expected: '10-15 min', min: 10, max: 15 }
+    { no: 1, label: 'DCT chat -> Titan respond', expected: '5 min', min: 0, max: 5 },
+    { no: 2, label: 'Titan respond -> pass security', expected: '10-15 min', min: 10, max: 15, reason: 'Waiting for security guard' },
+    { no: 3, label: 'pass security -> Start taking out the backup CT/ST', expected: '5-10 min', min: 5, max: 10 },
+    { no: 4, label: 'Finish take out backup CT/ST', expected: '5 min', min: 0, max: 5 },
+    { no: 5, label: 'backup rack -> faulty rack', expected: '10-15 min / time uncertain', min: 0, max: null },
+    { no: 6, label: 'arrive faulty rack -> start take out faulty CT/ST', expected: '5-10 min', min: 5, max: 10 },
+    { no: 7, label: 'start takeout faulty CT/ST -> finish faulty CT/ST replacement', expected: '5 min', min: 0, max: 5 },
+    { no: 8, label: 'mount backup CT/ST -> go back backup rack', expected: '10-20 min', min: 10, max: 20 },
+    { no: 9, label: 'faulty rack -> backup rack', expected: '10-15 min / time uncertain', min: 0, max: null },
+    { no: 10, label: 'arrive backup rack -> go out datahall', expected: '10-15 min', min: 10, max: 15 }
   ];
 
   function timeToMinutes(value) {
