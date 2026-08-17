@@ -503,21 +503,26 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
   }
 
   function buildExcelTable(dateStr, parsed, times) {
+    const actualTimes = [];
+    for (let i = 0; i < calculationSteps.length; i++) {
+      const actual = durationMinutes(times[i], times[i + 1]);
+      actualTimes.push(actual === null ? '--' : `${actual} min`);
+    }
+
     const rows = [
       ['Date', dateStr],
       [],
-      ['No.', 'Step', 'Time'],
-      ['1', 'DCT chat', times[0]],
-      ['2', 'Titan respond', times[1]],
-      ['3', 'pass security', times[2]],
-      ['4', 'Titan start take out the backup CT/ST', times[3]],
-      ['5', 'Titan finish take out the backup CT/ST', times[4]],
-      ['6', 'Arrived at faulty rack', times[5]],
-      ['7', 'Titan start take out faulty CT/ST', times[6]],
-      ['8', 'Titan finish mount backup CT/ST', times[7]],
-      ['9', 'Titan go back to backup rack', times[8]],
-      ['10', 'Titan arrived at backup rack', times[9]],
-      ['11', 'Titan go out from datahall', times[10]],
+      ['Step', 'Actual Time'],
+      ['1', actualTimes[0]],
+      ['2', actualTimes[1]],
+      ['3', actualTimes[2]],
+      ['4', actualTimes[3]],
+      ['5', actualTimes[4]],
+      ['6', actualTimes[5]],
+      ['7', actualTimes[6]],
+      ['8', actualTimes[7]],
+      ['9', actualTimes[8]],
+      ['10', actualTimes[9]],
       [],
       ['Cust Ticket No', parsed.ticketNo],
       ['Backup SN', parsed.backupSN],
