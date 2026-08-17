@@ -310,24 +310,26 @@
     }
   }
 
-   function parseTicketText(rawText) {
-    const faultySN = (rawText.match(/æ•…éšœSN[:ï¼š]\s*([A-Za-z0-9]+)/) || [])[1] || '';
-    
-    // Faulty Location Parsing
-    const faultyLocMatch = rawText.match(/æ•…éšœæœºå™¨ä½ç½®[:ï¼š]\s*åŒ…é—´[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºæŸœ[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºä½[:ï¼š]\s*([0-9]+)/);
+  function parseTicketText(rawText) {
+    const normalized = (rawText || '').replace(/\r/g, '');
+
+    const faultySN = (normalized.match(/故障SN[:：]\s*([A-Za-z0-9]+)/i) || normalized.match(/故障SN\s*[:：]?\s*([A-Za-z0-9]+)/i) || [])[1] || '';
+
+    const faultyLocMatch = normalized.match(/故障机器位置[:：]\s*包间[:：]\s*([^，,]+)[，,]\s*机柜[:：]\s*([^，,]+)[，,]\s*机位[:：]\s*([A-Za-z0-9]+)/i)
+      || normalized.match(/故障机器位置[:：]\s*([^，,]+)[，,]\s*([^，,]+)[，,]\s*([A-Za-z0-9]+)/i);
     const faultyRoom = faultyLocMatch ? faultyLocMatch[1].trim() : '';
     const faultyRack = faultyLocMatch ? faultyLocMatch[2].trim() : '';
     const faultySlot = faultyLocMatch ? faultyLocMatch[3].trim() : '';
 
-    // Ticket No
-    const ticketMatch = rawText.match(/æ•…éšœå•å·[:ï¼š]\s*é“¶æ²³Zå•å·[:ï¼š]\s*([A-Za-z0-9]+)/) || rawText.match(/([Zz][0-9]{15,})/);
-    const ticketNo = ticketMatch ? ticketMatch[1].trim() : '';
+    const ticketMatch = normalized.match(/(?:故障单号[:：]?\s*(?:银河)?Z?单号[:：]?\s*)?([Zz][A-Za-z0-9]+)/i)
+      || normalized.match(/([Zz][0-9]{15,})/i)
+      || [null, ''];
+    const ticketNo = ticketMatch[1] ? ticketMatch[1].trim() : '';
 
-    // Backup SN
-    const backupSN = (rawText.match(/å¤‡æœºSN[:ï¼š]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+    const backupSN = (normalized.match(/备机SN[:：]\s*([A-Za-z0-9]+)/i) || normalized.match(/备机SN\s*[:：]?\s*([A-Za-z0-9]+)/i) || [])[1] || '';
 
-    // Backup Location Parsing
-    const backupLocMatch = rawText.match(/å¤‡æœºä½ç½®[:ï¼š]\s*åŒ…é—´[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºæŸœ[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºä½[:ï¼š]\s*([0-9]+)/);
+    const backupLocMatch = normalized.match(/备机位置[:：]\s*包间[:：]\s*([^，,]+)[，,]\s*机柜[:：]\s*([^，,]+)[，,]\s*机位[:：]\s*([A-Za-z0-9]+)/i)
+      || normalized.match(/备机位置[:：]\s*([^，,]+)[，,]\s*([^，,]+)[，,]\s*([A-Za-z0-9]+)/i);
     const backupRoom = backupLocMatch ? backupLocMatch[1].trim() : '';
     const backupRack = backupLocMatch ? backupLocMatch[2].trim() : '';
     const backupSlot = backupLocMatch ? backupLocMatch[3].trim() : '';
@@ -463,14 +465,14 @@
     const t10 = getTimeVal('t10');
     const t11 = getTimeVal('t11');
 
-    const cleanTicketBlock = rawText.trim() || `ã€æ•´æœºæ•…éšœæ¢æœºé€šçŸ¥ã€‘
-ä»¥ä¸‹æ•´æœºæ•…éšœå•å·²ç»å®‰æŽ’å¤‡æœºï¼Œè¯·å°½å¿«å®Œæˆæ•´æœºæ›¿æ¢ã€‚
-æ•…éšœSNï¼š${parsed.faultySN}
-æ•…éšœæœºå™¨ä½ç½®ï¼šåŒ…é—´ï¼š${parsed.faultyRoom}ï¼ŒæœºæŸœï¼š${parsed.faultyRack}ï¼Œæœºä½ï¼š${parsed.faultySlot}
-æ•…éšœå•å·ï¼šé“¶æ²³Zå•å·ï¼š${parsed.ticketNo}
-å¤‡æœºSNï¼š${parsed.backupSN}
-å¤‡æœºä½ç½®ï¼šåŒ…é—´ï¼š${parsed.backupRoom}ï¼ŒæœºæŸœï¼š${parsed.backupRack}ï¼Œæœºä½ï¼š${parsed.backupSlot}
-@æ‰€æœ‰äºº`;
+    const cleanTicketBlock = rawText.trim() || `【换机通知】
+以下整机故障单已经安排备机，请尽快完成替换。
+故障SN：${parsed.faultySN}
+故障机器位置：包间：${parsed.faultyRoom}，机柜：${parsed.faultyRack}，机位：${parsed.faultySlot}
+故障单号：银河Z单号：${parsed.ticketNo}
+备机SN：${parsed.backupSN}
+备机位置：包间：${parsed.backupRoom}，机柜：${parsed.backupRack}，机位：${parsed.backupSlot}
+@所有人`;
 
 
     const reportText = `Date: ${dateStr}
