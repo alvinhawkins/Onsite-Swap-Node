@@ -278,7 +278,8 @@
   <div class="card">
     <h2>3. Generated Report Output</h2>
     <div id="output" class="output-area">Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".</div>
-    <button type="button" class="btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+    <button type="button" class="btn-secondary" onclick="copyToClipboard()">Copy Report</button>
+    <button type="button" class="btn-secondary" onclick="copyExcelTable()">Copy Excel Table</button>
 
     <div class="section-header">
       <strong>4. Calculation</strong>
@@ -499,6 +500,65 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
 
     document.getElementById('output').innerText = reportText;
     calculateSection4();
+  }
+
+  function buildExcelTable(dateStr, parsed, times) {
+    const rows = [
+      ['Date', dateStr],
+      [],
+      ['No.', 'Step', 'Time'],
+      ['1', 'DCT chat', times[0]],
+      ['2', 'Titan respond', times[1]],
+      ['3', 'pass security', times[2]],
+      ['4', 'Titan start take out the backup CT/ST', times[3]],
+      ['5', 'Titan finish take out the backup CT/ST', times[4]],
+      ['6', 'Arrived at faulty rack', times[5]],
+      ['7', 'Titan start take out faulty CT/ST', times[6]],
+      ['8', 'Titan finish mount backup CT/ST', times[7]],
+      ['9', 'Titan go back to backup rack', times[8]],
+      ['10', 'Titan arrived at backup rack', times[9]],
+      ['11', 'Titan go out from datahall', times[10]],
+      [],
+      ['Cust Ticket No', parsed.ticketNo],
+      ['Backup SN', parsed.backupSN],
+      ['Backup Location', parsed.backupRoom],
+      ['Backup Rack', parsed.backupRack],
+      ['Backup Slot', parsed.backupSlot],
+      ['Faulty SN', parsed.faultySN],
+      ['Faulty Location', parsed.faultyRoom],
+      ['Faulty Rack', parsed.faultyRack],
+      ['Faulty Slot', parsed.faultySlot]
+    ];
+
+    return rows
+      .map((row) => row.length === 0 ? '' : row.map((cell) => String(cell ?? '')).join('\t'))
+      .join('\n');
+  }
+
+  function copyExcelTable() {
+    const dateStr = document.getElementById('reportDate').value.trim();
+    const rawText = document.getElementById('rawTicket').value;
+    const parsed = parseTicketText(rawText);
+    const times = [
+      document.getElementById('t1').value.trim(),
+      document.getElementById('t2').value.trim(),
+      document.getElementById('t3').value.trim(),
+      document.getElementById('t4').value.trim(),
+      document.getElementById('t5').value.trim(),
+      document.getElementById('t6').value.trim(),
+      document.getElementById('t7').value.trim(),
+      document.getElementById('t8').value.trim(),
+      document.getElementById('t9').value.trim(),
+      document.getElementById('t10').value.trim(),
+      document.getElementById('t11').value.trim()
+    ];
+
+    const text = buildExcelTable(dateStr, parsed, times);
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Excel-ready table copied to clipboard. Paste into Excel and it will split into columns.');
+    }).catch(err => {
+      alert('Failed to copy Excel table: ' + err);
+    });
   }
 
   function copyToClipboard() {
