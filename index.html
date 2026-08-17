@@ -438,6 +438,7 @@
       </table>
       <div class="calc-summary">
         <div><strong>Date:</strong> ${reportDate || '--'}</div>
+        <div><strong>Ticket No:</strong> ${parsed.ticketNo || '--'}</div>
         <div><strong>Total Actual Time:</strong> ${hasAllTimes ? reportedTotal + ' minutes' : '--'}</div>
         <div><strong>Timeout Count:</strong> ${hasAllTimes ? timeoutCount : '--'}</div>
         <div><strong>Overall Status:</strong> ${!hasAllTimes ? '<span class="calc-na">Missing timestamp(s)</span>' : timeoutCount === 0 ? '<span class="calc-ok">No timeout</span>' : '<span class="calc-timeout">Timeout occurred</span>'}</div>
@@ -506,7 +507,7 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     const actualTimes = [];
     for (let i = 0; i < calculationSteps.length; i++) {
       const actual = durationMinutes(times[i], times[i + 1]);
-      actualTimes.push(actual === null ? '--' : `${actual} min`);
+      actualTimes.push(actual === null ? '--' : `${actual}`);
     }
 
     const rows = [
