@@ -40,6 +40,39 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
+
+    .calculation-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 8px;
+    }
+    .calculation-table th, .calculation-table td {
+      border: 1px solid var(--border);
+      padding: 7px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .calculation-table th {
+      background: #f0f2f5;
+      font-weight: 700;
+    }
+    .calculation-table td:nth-child(2) {
+      text-align: left;
+    }
+    .calc-ok { color: #389e0d; font-weight: 700; }
+    .calc-timeout { color: #cf1322; font-weight: 700; }
+    .calc-na { color: #595959; font-weight: 600; }
+    .calc-summary {
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fafafa;
+      line-height: 1.8;
+    }
+    .calc-summary strong { margin-right: 4px; }
+
     h2 {
       margin-top: 0;
       margin-bottom: 16px;
@@ -172,7 +205,7 @@
 
     <div class="form-group">
       <label>Paste Notification Block</label>
-      <textarea id="rawTicket" placeholder="Paste the 【整机故障换机通知】 text here..."></textarea>
+      <textarea id="rawTicket" placeholder="Paste the ã€æ•´æœºæ•…éšœæ¢æœºé€šçŸ¥ã€‘ text here..."></textarea>
     </div>
 
     <div class="section-header">
@@ -246,6 +279,13 @@
     <h2>3. Generated Report Output</h2>
     <div id="output" class="output-area">Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".</div>
     <button type="button" class="btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+
+    <div class="section-header">
+      <strong>4. Calculation</strong>
+    </div>
+    <div id="calculationOutput">
+      <div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>
+    </div>
   </div>
 </div>
 
@@ -270,24 +310,24 @@
     }
   }
 
-  function parseTicketText(rawText) {
-    const faultySN = (rawText.match(/故障SN[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+   function parseTicketText(rawText) {
+    const faultySN = (rawText.match(/æ•…éšœSN[:ï¼š]\s*([A-Za-z0-9]+)/) || [])[1] || '';
     
     // Faulty Location Parsing
-    const faultyLocMatch = rawText.match(/故障机器位置[:：]\s*包间[:：]\s*([^,，]+)[,，]\s*机柜[:：]\s*([^,，]+)[,，]\s*机位[:：]\s*([0-9]+)/);
+    const faultyLocMatch = rawText.match(/æ•…éšœæœºå™¨ä½ç½®[:ï¼š]\s*åŒ…é—´[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºæŸœ[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºä½[:ï¼š]\s*([0-9]+)/);
     const faultyRoom = faultyLocMatch ? faultyLocMatch[1].trim() : '';
     const faultyRack = faultyLocMatch ? faultyLocMatch[2].trim() : '';
     const faultySlot = faultyLocMatch ? faultyLocMatch[3].trim() : '';
 
     // Ticket No
-    const ticketMatch = rawText.match(/故障单号[:：]\s*银河Z单号[:：]\s*([A-Za-z0-9]+)/) || rawText.match(/([Zz][0-9]{15,})/);
+    const ticketMatch = rawText.match(/æ•…éšœå•å·[:ï¼š]\s*é“¶æ²³Zå•å·[:ï¼š]\s*([A-Za-z0-9]+)/) || rawText.match(/([Zz][0-9]{15,})/);
     const ticketNo = ticketMatch ? ticketMatch[1].trim() : '';
 
     // Backup SN
-    const backupSN = (rawText.match(/备机SN[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+    const backupSN = (rawText.match(/å¤‡æœºSN[:ï¼š]\s*([A-Za-z0-9]+)/) || [])[1] || '';
 
     // Backup Location Parsing
-    const backupLocMatch = rawText.match(/备机位置[:：]\s*包间[:：]\s*([^,，]+)[,，]\s*机柜[:：]\s*([^,，]+)[,，]\s*机位[:：]\s*([0-9]+)/);
+    const backupLocMatch = rawText.match(/å¤‡æœºä½ç½®[:ï¼š]\s*åŒ…é—´[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºæŸœ[:ï¼š]\s*([^,ï¼Œ]+)[,ï¼Œ]\s*æœºä½[:ï¼š]\s*([0-9]+)/);
     const backupRoom = backupLocMatch ? backupLocMatch[1].trim() : '';
     const backupRack = backupLocMatch ? backupLocMatch[2].trim() : '';
     const backupSlot = backupLocMatch ? backupLocMatch[3].trim() : '';
@@ -303,6 +343,104 @@
       backupRack,
       backupSlot
     };
+  }
+
+  const calculationSteps = [
+    { no: 1, label: 'DCT chat â†’ Titan respond', expected: '5 min', min: 0, max: 5 },
+    { no: 2, label: 'Titan respond â†’ pass security', expected: '10-15 min', min: 10, max: 15, reason: 'Waiting for security guard' },
+    { no: 3, label: 'pass security â†’ arrive backup rack', expected: '5-10 min', min: 5, max: 10 },
+    { no: 4, label: 'start â†’ finish take out backup CT/ST', expected: '5 min', min: 0, max: 5 },
+    { no: 5, label: 'backup rack â†’ faulty rack', expected: '10-15 min / time uncertain', min: 0, max: null },
+    { no: 6, label: 'arrive faulty rack â†’ start take out faulty CT/ST', expected: '5-10 min', min: 5, max: 10 },
+    { no: 7, label: 'start â†’ finish faulty CT/ST replacement', expected: '5 min', min: 0, max: 5 },
+    { no: 8, label: 'mount backup CT/ST â†’ go back backup rack', expected: '10-20 min', min: 10, max: 20 },
+    { no: 9, label: 'faulty rack â†’ backup rack', expected: '10-15 min / time uncertain', min: 0, max: null },
+    { no: 10, label: 'arrive backup rack â†’ go out datahall', expected: '10-15 min', min: 10, max: 15 }
+  ];
+
+  function timeToMinutes(value) {
+    if (!value || value === '--') return null;
+    const parts = value.split(':').map(Number);
+    if (parts.length !== 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return null;
+    return parts[0] * 60 + parts[1];
+  }
+
+  function durationMinutes(start, end) {
+    const s = timeToMinutes(start);
+    const e = timeToMinutes(end);
+    if (s === null || e === null) return null;
+    let diff = e - s;
+    if (diff < 0) diff += 24 * 60;
+    return diff;
+  }
+
+  function formatMinutes(value) {
+    return value === null ? '--' : `${value} min`;
+  }
+
+  function calculateSection4() {
+    const times = [];
+    for (let i = 1; i <= 11; i++) {
+      times.push(document.getElementById(`t${i}`).value.trim());
+    }
+
+    let total = 0;
+    let hasAllTimes = true;
+    let timeoutCount = 0;
+    let rowsHtml = '';
+
+    calculationSteps.forEach((step, index) => {
+      const actual = durationMinutes(times[index], times[index + 1]);
+      if (actual === null) hasAllTimes = false;
+      else total += actual;
+
+      let status = '--';
+      let statusClass = 'calc-na';
+
+      if (actual !== null) {
+        if (step.max !== null && actual > step.max) {
+          status = step.reason || 'Timeout';
+          statusClass = 'calc-timeout';
+          timeoutCount++;
+        } else {
+          status = 'No timeout';
+          statusClass = 'calc-ok';
+        }
+      }
+
+      rowsHtml += `<tr>
+        <td>${step.no}</td>
+        <td>${step.label}</td>
+        <td>${step.expected}</td>
+        <td>${formatMinutes(actual)}</td>
+        <td class="${statusClass}">${status}</td>
+      </tr>`;
+    });
+
+    const reportedTotal = total;
+    const reportDate = document.getElementById('reportDate').value.trim();
+
+    document.getElementById('calculationOutput').innerHTML = `
+      <table class="calculation-table">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Calculation Step</th>
+            <th>Expected Time</th>
+            <th>Actual Time</th>
+            <th>Status / Timeout Reason</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <div class="calc-summary">
+        <div><strong>Date:</strong> ${reportDate || '--'}</div>
+        <div><strong>Total Actual Time:</strong> ${hasAllTimes ? reportedTotal + ' minutes' : '--'}</div>
+        <div><strong>Timeout Count:</strong> ${hasAllTimes ? timeoutCount : '--'}</div>
+        <div><strong>Overall Status:</strong> ${!hasAllTimes ? '<span class="calc-na">Missing timestamp(s)</span>' : timeoutCount === 0 ? '<span class="calc-ok">No timeout</span>' : '<span class="calc-timeout">Timeout occurred</span>'}</div>
+      </div>`;
+
+    return { total: hasAllTimes ? reportedTotal : null, timeoutCount, hasAllTimes };
   }
 
   function generateReport() {
@@ -325,14 +463,15 @@
     const t10 = getTimeVal('t10');
     const t11 = getTimeVal('t11');
 
-    const cleanTicketBlock = rawText.trim() || `【整机故障换机通知】
-以下整机故障单已经安排备机，请尽快完成整机替换。
-故障SN：${parsed.faultySN}
-故障机器位置：包间：${parsed.faultyRoom}，机柜：${parsed.faultyRack}，机位：${parsed.faultySlot}
-故障单号：银河Z单号：${parsed.ticketNo}
-备机SN：${parsed.backupSN}
-备机位置：包间：${parsed.backupRoom}，机柜：${parsed.backupRack}，机位：${parsed.backupSlot}
-@所有人`;
+    const cleanTicketBlock = rawText.trim() || `ã€æ•´æœºæ•…éšœæ¢æœºé€šçŸ¥ã€‘
+ä»¥ä¸‹æ•´æœºæ•…éšœå•å·²ç»å®‰æŽ’å¤‡æœºï¼Œè¯·å°½å¿«å®Œæˆæ•´æœºæ›¿æ¢ã€‚
+æ•…éšœSNï¼š${parsed.faultySN}
+æ•…éšœæœºå™¨ä½ç½®ï¼šåŒ…é—´ï¼š${parsed.faultyRoom}ï¼ŒæœºæŸœï¼š${parsed.faultyRack}ï¼Œæœºä½ï¼š${parsed.faultySlot}
+æ•…éšœå•å·ï¼šé“¶æ²³Zå•å·ï¼š${parsed.ticketNo}
+å¤‡æœºSNï¼š${parsed.backupSN}
+å¤‡æœºä½ç½®ï¼šåŒ…é—´ï¼š${parsed.backupRoom}ï¼ŒæœºæŸœï¼š${parsed.backupRack}ï¼Œæœºä½ï¼š${parsed.backupSlot}
+@æ‰€æœ‰äºº`;
+
 
     const reportText = `Date: ${dateStr}
 
@@ -357,6 +496,7 @@ Faulty SN: ${parsed.faultySN}
 Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parsed.faultySlot}`;
 
     document.getElementById('output').innerText = reportText;
+    calculateSection4();
   }
 
   function copyToClipboard() {
