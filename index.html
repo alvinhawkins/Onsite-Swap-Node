@@ -21,6 +21,55 @@
       padding: 24px;
     }
 
+    .entry-tabs {
+      max-width: 1100px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .entry-tab {
+      min-width: 42px;
+      padding: 8px 12px;
+      border-radius: 6px 6px 0 0;
+      background: #e6f7ff;
+      color: #0a5eb6;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      font-weight: 700;
+      box-shadow: none;
+    }
+
+    .entry-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .entry-tab.add-entry {
+      min-width: 42px;
+      background: #52c41a;
+      color: #fff;
+      border-color: #52c41a;
+      font-size: 1.3rem;
+      line-height: 1;
+      padding: 7px 12px;
+    }
+
+    .entry-tab.add-entry:hover {
+      background: #73d13d;
+    }
+
+    .report-entry {
+      display: none;
+    }
+
+    .report-entry.active {
+      display: block;
+    }
+
     .container {
       max-width: 1100px;
       margin: 0 auto;
@@ -286,99 +335,107 @@
 </head>
 <body>
 
-<div class="container">
-  <!-- Input Form -->
-  <div class="card">
-    <h2>1. Paste Ticket Message</h2>
-    
-    <div class="form-group">
-      <label>Date</label>
-      <input type="text" id="reportDate" placeholder="DD/MM/YYYY">
-    </div>
+<div class="entry-tabs" id="entryTabs">
+  <button type="button" class="entry-tab active" data-action="activate-tab" data-entry-id="1">1</button>
+  <button type="button" class="entry-tab add-entry" data-action="add-entry" aria-label="Add another report">+</button>
+</div>
 
-    <div class="form-group">
-      <label>Paste Notification Block</label>
-      <textarea id="rawTicket" placeholder="Paste the Chinese text here..."></textarea>
-    </div>
+<div id="entriesContainer">
+  <div class="report-entry active" data-entry-id="1">
+    <div class="container">
+      <!-- Input Form -->
+      <div class="card">
+        <h2>1. Paste Ticket Message</h2>
 
-    <div class="section-header">
-      <strong>2. Event Timestamps</strong>
-      <button type="button" class="btn-danger" onclick="clearAllTimes()">Reset Times</button>
-    </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="text" id="reportDate-1" data-field="reportDate" placeholder="DD/MM/YYYY">
+        </div>
 
-    <div id="time-steps">
-      <div class="time-row">
-        <label>1. DCT chat</label>
-        <input type="time" id="t1">
-        <button type="button" class="btn-now" onclick="captureTime('t1')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>2. Titan respond</label>
-        <input type="time" id="t2">
-        <button type="button" class="btn-now" onclick="captureTime('t2')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>3. pass security</label>
-        <input type="time" id="t3">
-        <button type="button" class="btn-now" onclick="captureTime('t3')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>4. Titan start take out the backup CT/ST</label>
-        <input type="time" id="t4">
-        <button type="button" class="btn-now" onclick="captureTime('t4')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>5. Titan finish take out the backup CT/ST</label>
-        <input type="time" id="t5">
-        <button type="button" class="btn-now" onclick="captureTime('t5')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>6. Arrived at faulty rack</label>
-        <input type="time" id="t6">
-        <button type="button" class="btn-now" onclick="captureTime('t6')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>7. Titan start take out faulty CT/ST</label>
-        <input type="time" id="t7">
-        <button type="button" class="btn-now" onclick="captureTime('t7')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>8. Titan finish mount backup CT/ST</label>
-        <input type="time" id="t8">
-        <button type="button" class="btn-now" onclick="captureTime('t8')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>9. Titan go back to backup rack</label>
-        <input type="time" id="t9">
-        <button type="button" class="btn-now" onclick="captureTime('t9')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>10. Titan arrived at backup rack</label>
-        <input type="time" id="t10">
-        <button type="button" class="btn-now" onclick="captureTime('t10')">NOW</button>
-      </div>
-      <div class="time-row">
-        <label>11. Titan go out from datahall</label>
-        <input type="time" id="t11">
-        <button type="button" class="btn-now" onclick="captureTime('t11')">NOW</button>
-      </div>
-    </div>
+        <div class="form-group">
+          <label>Paste Notification Block</label>
+          <textarea id="rawTicket-1" data-field="rawTicket" placeholder="Paste the Chinese text here..."></textarea>
+        </div>
 
-    <button type="button" class="btn-submit" onclick="generateReport()">Generate Final Report</button>
-  </div>
+        <div class="section-header">
+          <strong>2. Event Timestamps</strong>
+          <button type="button" class="btn-danger" data-action="clear-times" data-entry-id="1">Reset Times</button>
+        </div>
 
-  <!-- Output Section -->
-  <div class="card">
-    <h2>3. Generated Report Output</h2>
-    <div id="output" class="output-area">Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".</div>
-    <button type="button" class="btn-secondary" onclick="copyToClipboard()">Copy Report</button>
-    <!-- <button type="button" class="btn-secondary" onclick="copyExcelTable()">Transfer to Excel</button> -->
+        <div id="time-steps-1">
+          <div class="time-row">
+            <label>1. DCT chat</label>
+            <input type="time" id="t1-1" data-field="t1">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t1" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>2. Titan respond</label>
+            <input type="time" id="t2-1" data-field="t2">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t2" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>3. pass security</label>
+            <input type="time" id="t3-1" data-field="t3">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t3" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>4. Titan start take out the backup CT/ST</label>
+            <input type="time" id="t4-1" data-field="t4">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t4" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>5. Titan finish take out the backup CT/ST</label>
+            <input type="time" id="t5-1" data-field="t5">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t5" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>6. Arrived at faulty rack</label>
+            <input type="time" id="t6-1" data-field="t6">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t6" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>7. Titan start take out faulty CT/ST</label>
+            <input type="time" id="t7-1" data-field="t7">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t7" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>8. Titan finish mount backup CT/ST</label>
+            <input type="time" id="t8-1" data-field="t8">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t8" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>9. Titan go back to backup rack</label>
+            <input type="time" id="t9-1" data-field="t9">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t9" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>10. Titan arrived at backup rack</label>
+            <input type="time" id="t10-1" data-field="t10">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t10" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>11. Titan go out from datahall</label>
+            <input type="time" id="t11-1" data-field="t11">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t11" data-entry-id="1">NOW</button>
+          </div>
+        </div>
 
-    <div class="section-header">
-      <strong>4. Calculation</strong>
-    </div>
-    <div id="calculationOutput">
-      <div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>
+        <button type="button" class="btn-submit" data-action="generate-report" data-entry-id="1">Generate Final Report</button>
+      </div>
+
+      <!-- Output Section -->
+      <div class="card">
+        <h2>3. Generated Report Output</h2>
+        <div id="output-1" class="output-area" data-field="output">Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".</div>
+        <button type="button" class="btn-secondary" data-action="copy-report" data-entry-id="1">Copy Report</button>
+
+        <div class="section-header">
+          <strong>4. Calculation</strong>
+        </div>
+        <div id="calculationOutput-1" data-field="calculationOutput">
+          <div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -395,28 +452,116 @@
     <img src="bromat.png" alt="Bromat logo">
     <h3 id="popupTitle">Notice</h3>
     <p id="popupMessage">Message</p>
-    <button type="button" class="popup-close" onclick="closePopup()">Close</button>
+    <button type="button" class="popup-close" data-action="close-popup">Close</button>
   </div>
 </div>
 
 <script>
-  // Set date default to today in DD/MM/YYYY format
-  const today = new Date();
-  const dd = String(today.getDate()).padStart(2, '0');
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const yyyy = today.getFullYear();
-  document.getElementById('reportDate').value = `${dd}/${mm}/${yyyy}`;
+  let nextEntryId = 2;
 
-  function captureTime(inputId) {
+  function setDefaultDateForEntry(entry) {
+    const field = entry.querySelector('[data-field="reportDate"]');
+    if (field) {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      field.value = `${dd}/${mm}/${yyyy}`;
+    }
+  }
+
+  function getEntryById(entryId) {
+    return document.querySelector(`.report-entry[data-entry-id="${entryId}"]`);
+  }
+
+  function getFieldByName(entryId, fieldName) {
+    const entry = getEntryById(entryId);
+    if (!entry) return null;
+    return entry.querySelector(`[data-field="${fieldName}"]`);
+  }
+
+  function getEntryValue(entryId, fieldName) {
+    const field = getFieldByName(entryId, fieldName);
+    if (!field) return '';
+    return field.value !== undefined ? field.value.trim() : (field.textContent || '').trim();
+  }
+
+  function activateTab(entryId) {
+    document.querySelectorAll('.report-entry').forEach((entry) => {
+      entry.classList.toggle('active', Number(entry.dataset.entryId) === Number(entryId));
+    });
+
+    document.querySelectorAll('.entry-tab').forEach((button) => {
+      const isActive = Number(button.dataset.entryId) === Number(entryId);
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  }
+
+  function addEntry() {
+    const sourceEntry = document.querySelector('.report-entry');
+    if (!sourceEntry) return;
+
+    const entryId = nextEntryId;
+    const clone = sourceEntry.cloneNode(true);
+    clone.classList.remove('active');
+    clone.dataset.entryId = String(entryId);
+
+    clone.querySelectorAll('[id]').forEach((node) => {
+      const baseId = node.id.replace(/-\d+$/, '');
+      node.id = `${baseId}-${entryId}`;
+    });
+
+    clone.querySelectorAll('[data-entry-id]').forEach((node) => {
+      node.dataset.entryId = String(entryId);
+    });
+
+    clone.querySelectorAll('[data-field]').forEach((node) => {
+      if (node.hasAttribute('data-field')) {
+        const fieldName = node.dataset.field;
+        if (fieldName === 'reportDate') {
+          node.value = '';
+        } else if (fieldName.startsWith('t')) {
+          node.value = '';
+        } else if (fieldName === 'rawTicket') {
+          node.value = '';
+        } else if (fieldName === 'output') {
+          node.textContent = 'Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".';
+        } else if (fieldName === 'calculationOutput') {
+          node.innerHTML = '<div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>';
+        }
+      }
+    });
+
+    const tabButton = document.createElement('button');
+    tabButton.type = 'button';
+    tabButton.className = 'entry-tab';
+    tabButton.dataset.action = 'activate-tab';
+    tabButton.dataset.entryId = String(entryId);
+    tabButton.textContent = String(entryId);
+    tabButton.setAttribute('aria-pressed', 'false');
+
+    const addButton = document.querySelector('.entry-tab.add-entry');
+    addButton.before(tabButton);
+    document.getElementById('entriesContainer').appendChild(clone);
+    setDefaultDateForEntry(clone);
+    activateTab(entryId);
+    nextEntryId += 1;
+  }
+
+  function captureTime(entryId, fieldName) {
+    const input = getFieldByName(entryId, fieldName);
+    if (!input) return;
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById(inputId).value = `${hours}:${minutes}`;
+    input.value = `${hours}:${minutes}`;
   }
 
-  function clearAllTimes() {
+  function clearAllTimes(entryId) {
     for (let i = 1; i <= 11; i++) {
-      document.getElementById(`t${i}`).value = '';
+      const field = getFieldByName(entryId, `t${i}`);
+      if (field) field.value = '';
     }
   }
 
@@ -490,10 +635,10 @@
     return value === null ? '--' : `${value} min`;
   }
 
-  function calculateSection4() {
+  function calculateSection4(entryId) {
     const times = [];
     for (let i = 1; i <= 11; i++) {
-      times.push(document.getElementById(`t${i}`).value.trim());
+      times.push(getEntryValue(entryId, `t${i}`));
     }
 
     let total = 0;
@@ -530,9 +675,12 @@
     });
 
     const reportedTotal = total;
-    const reportDate = document.getElementById('reportDate').value.trim();
+    const reportDate = getEntryValue(entryId, 'reportDate');
+    const calcBox = getFieldByName(entryId, 'calculationOutput');
 
-    document.getElementById('calculationOutput').innerHTML = `
+    if (!calcBox) return { total: hasAllTimes ? reportedTotal : null, timeoutCount, hasAllTimes };
+
+    calcBox.innerHTML = `
       <table class="calculation-table">
         <thead>
           <tr>
@@ -555,13 +703,12 @@
     return { total: hasAllTimes ? reportedTotal : null, timeoutCount, hasAllTimes };
   }
 
-  function generateReport() {
-    const dateStr = document.getElementById('reportDate').value.trim();
-    const rawText = document.getElementById('rawTicket').value;
-    
+  function generateReport(entryId) {
+    const dateStr = getEntryValue(entryId, 'reportDate');
+    const rawText = getEntryValue(entryId, 'rawTicket');
     const parsed = parseTicketText(rawText);
 
-    const getTimeVal = (id) => document.getElementById(id).value.trim() || '--';
+    const getTimeVal = (id) => getEntryValue(entryId, id) || '--';
 
     const t1 = getTimeVal('t1');
     const t2 = getTimeVal('t2');
@@ -574,16 +721,6 @@
     const t9 = getTimeVal('t9');
     const t10 = getTimeVal('t10');
     const t11 = getTimeVal('t11');
-
-    const cleanTicketBlock = rawText.trim() || `【换机通知】
-以下整机故障单已经安排备机，请尽快完成替换。
-故障SN：${parsed.faultySN}
-故障机器位置：包间：${parsed.faultyRoom}，机柜：${parsed.faultyRack}，机位：${parsed.faultySlot}
-故障单号：银河Z单号：${parsed.ticketNo}
-备机SN：${parsed.backupSN}
-备机位置：包间：${parsed.backupRoom}，机柜：${parsed.backupRack}，机位：${parsed.backupSlot}
-@所有人`;
-
 
     const reportText = `Date: ${dateStr}
 
@@ -607,8 +744,9 @@ Backup Location: ${parsed.backupRoom}, Rack: ${parsed.backupRack}, Slot: ${parse
 Faulty SN: ${parsed.faultySN}
 Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parsed.faultySlot}`;
 
-    document.getElementById('output').innerText = reportText;
-    calculateSection4();
+    const outputField = getFieldByName(entryId, 'output');
+    if (outputField) outputField.innerText = reportText;
+    calculateSection4(entryId);
   }
 
   function buildExcelTable(dateStr, parsed, times) {
@@ -618,19 +756,7 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
       actualTimes.push(actual === null ? '--' : `${actual}`);
     }
 
-    const rows = [
-     // [actualTimes[0]],
-     // [actualTimes[1]],
-     // [actualTimes[2]],
-     // [actualTimes[3]],
-     // [actualTimes[4]],
-     // [actualTimes[5]],
-     // [actualTimes[6]],
-     // [actualTimes[7]],
-     // [actualTimes[8]],
-     // [actualTimes[9]],
-    ];
-
+    const rows = [];
     return rows
       .map((row) => row.length === 0 ? '' : row.map((cell) => String(cell ?? '')).join('\t'))
       .join('\n');
@@ -646,40 +772,76 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     document.getElementById('popupOverlay').classList.remove('visible');
   }
 
-  function copyExcelTable() {
-    const dateStr = document.getElementById('reportDate').value.trim();
-    const rawText = document.getElementById('rawTicket').value;
+  function copyExcelTable(entryId) {
+    const rawText = getEntryValue(entryId, 'rawTicket');
     const parsed = parseTicketText(rawText);
-    const times = [
-      document.getElementById('t1').value.trim(),
-      document.getElementById('t2').value.trim(),
-      document.getElementById('t3').value.trim(),
-      document.getElementById('t4').value.trim(),
-      document.getElementById('t5').value.trim(),
-      document.getElementById('t6').value.trim(),
-      document.getElementById('t7').value.trim(),
-      document.getElementById('t8').value.trim(),
-      document.getElementById('t9').value.trim(),
-      document.getElementById('t10').value.trim(),
-      document.getElementById('t11').value.trim()
-    ];
+    const times = [];
+    for (let i = 1; i <= 11; i++) {
+      times.push(getEntryValue(entryId, `t${i}`));
+    }
 
-    const text = buildExcelTable(dateStr, parsed, times);
+    const text = buildExcelTable(getEntryValue(entryId, 'reportDate'), parsed, times);
     navigator.clipboard.writeText(text).then(() => {
       showPopup('Copied', 'Still Under Development');
-    }).catch(err => {
+    }).catch((err) => {
       showPopup('Copy failed', 'Failed to copy Excel table: ' + err);
     });
   }
 
-  function copyToClipboard() {
-    const text = document.getElementById('output').innerText;
-    navigator.clipboard.writeText(text).then(() => {
+  function copyToClipboard(entryId) {
+    const outputField = getFieldByName(entryId, 'output');
+    if (!outputField) return;
+
+    navigator.clipboard.writeText(outputField.innerText).then(() => {
       showPopup('Copied', 'Report copied to clipboard!');
-    }).catch(err => {
+    }).catch((err) => {
       showPopup('Copy failed', 'Failed to copy: ' + err);
     });
   }
+
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const entryId = button.dataset.entryId || document.querySelector('.report-entry.active')?.dataset.entryId || '1';
+
+    if (action === 'activate-tab') {
+      activateTab(entryId);
+      return;
+    }
+
+    if (action === 'add-entry') {
+      addEntry();
+      return;
+    }
+
+    if (action === 'capture-time') {
+      captureTime(entryId, button.dataset.field);
+      return;
+    }
+
+    if (action === 'clear-times') {
+      clearAllTimes(entryId);
+      return;
+    }
+
+    if (action === 'generate-report') {
+      generateReport(entryId);
+      return;
+    }
+
+    if (action === 'copy-report') {
+      copyToClipboard(entryId);
+      return;
+    }
+
+    if (action === 'close-popup') {
+      closePopup();
+    }
+  });
+
+  setDefaultDateForEntry(document.querySelector('.report-entry'));
 </script>
 
 </body>
