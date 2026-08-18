@@ -303,10 +303,7 @@
 
     <div class="section-header">
       <strong>2. Event Timestamps</strong>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn-danger" onclick="clearAllTimes()">Reset Times</button>
-        <button type="button" class="btn-danger" onclick="clearSavedData()" title="Delete all saved data from storage">Clear Saved Data</button>
-      </div>
+      <button type="button" class="btn-danger" onclick="clearAllTimes()">Reset Times</button>
     </div>
 
     <div id="time-steps">
@@ -403,75 +400,12 @@
 </div>
 
 <script>
-  // Storage key for localStorage
-  const STORAGE_KEY = 'dctReportFormData';
-
-  // Save form data to localStorage
-  function saveFormData() {
-    const formData = {
-      reportDate: document.getElementById('reportDate').value,
-      rawTicket: document.getElementById('rawTicket').value,
-      times: {}
-    };
-    
-    for (let i = 1; i <= 11; i++) {
-      formData.times[`t${i}`] = document.getElementById(`t${i}`).value;
-    }
-    
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-  }
-
-  // Load form data from localStorage
-  function loadFormData() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    
-    if (saved) {
-      try {
-        const formData = JSON.parse(saved);
-        
-        if (formData.reportDate) {
-          document.getElementById('reportDate').value = formData.reportDate;
-        }
-        
-        if (formData.rawTicket) {
-          document.getElementById('rawTicket').value = formData.rawTicket;
-        }
-        
-        if (formData.times) {
-          for (let i = 1; i <= 11; i++) {
-            if (formData.times[`t${i}`]) {
-              document.getElementById(`t${i}`).value = formData.times[`t${i}`];
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Error loading saved data:', e);
-      }
-    } else {
-      // Set date default to today in DD/MM/YYYY format if no saved data
-      const today = new Date();
-      const dd = String(today.getDate()).padStart(2, '0');
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const yyyy = today.getFullYear();
-      document.getElementById('reportDate').value = `${dd}/${mm}/${yyyy}`;
-    }
-  }
-
-  // Add auto-save on input change
-  function setupAutoSave() {
-    document.getElementById('reportDate').addEventListener('change', saveFormData);
-    document.getElementById('rawTicket').addEventListener('input', saveFormData);
-    
-    for (let i = 1; i <= 11; i++) {
-      document.getElementById(`t${i}`).addEventListener('change', saveFormData);
-    }
-  }
-
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    loadFormData();
-    setupAutoSave();
-  });
+  // Set date default to today in DD/MM/YYYY format
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  document.getElementById('reportDate').value = `${dd}/${mm}/${yyyy}`;
 
   function captureTime(inputId) {
     const now = new Date();
@@ -483,14 +417,6 @@
   function clearAllTimes() {
     for (let i = 1; i <= 11; i++) {
       document.getElementById(`t${i}`).value = '';
-    }
-    saveFormData();
-  }
-
-  function clearSavedData() {
-    if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
     }
   }
 
