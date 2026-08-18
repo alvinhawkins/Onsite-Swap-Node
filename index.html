@@ -282,6 +282,62 @@
       cursor: pointer;
       font-weight: 600;
     }
+
+    .report-history {
+      margin-top: 15px;
+      border-top: 2px solid var(--border);
+      padding-top: 15px;
+    }
+
+    .report-item {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f0f2f5;
+      border-radius: 4px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .report-item-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .report-item-meta {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .report-item-buttons {
+      margin-top: 6px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .report-item-buttons button {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .report-item-buttons .btn-view {
+      background-color: #1890ff;
+    }
+
+    .report-item-buttons .btn-view:hover {
+      background-color: #40a9ff;
+    }
+
+    .report-item-buttons .btn-delete {
+      background-color: #ff4d4f;
+    }
+
+    .report-item-buttons .btn-delete:hover {
+      background-color: #ff7875;
+    }
   </style>
 </head>
 <body>
@@ -376,6 +432,7 @@
 
     <div class="section-header">
       <strong>4. Calculation</strong>
+      <button type="button" class="btn-secondary" style="padding: 8px 12px; font-size: 0.9rem; width: auto;" onclick="addNewReport()" title="Add another swap node report">➕ Add New Report</button>
     </div>
     <div id="calculationOutput">
       <div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>
@@ -400,12 +457,97 @@
 </div>
 
 <script>
+  // Storage keys for localStorage
+  const STORAGE_KEY = 'dctReportFormData';
+  const REPORTS_STORAGE_KEY = 'dctGeneratedReports';
+  
+  // Array to store multiple reports
+  let generatedReports = [];
+
   // Set date default to today in DD/MM/YYYY format
   const today = new Date();
   const dd = String(today.getDate()).padStart(2, '0');
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const yyyy = today.getFullYear();
   document.getElementById('reportDate').value = `${dd}/${mm}/${yyyy}`;
+
+  // Load saved reports from localStorage on page load
+  window.addEventListener('DOMContentLoaded', function() {
+    const savedReports = localStorage.getItem(REPORTS_STORAGE_KEY);
+    if (savedReports) {
+      try {
+        generatedReports = JSON.parse(savedReports);
+        displayReportsHistory();
+      } catch (e) {
+        console.error('Error loading reports:', e);
+      }
+    }
+  });
+
+  // Save reports to localStorage
+  function saveReports() {
+    localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(generatedReports));
+  }
+
+  // Save form data to localStorage
+  function saveFormData() {
+    const formData = {
+      reportDate: document.getElementById('reportDate').value,
+      rawTicket: document.getElementById('rawTicket').value,
+      times: {}
+    };
+    
+    for (let i = 1; i <= 11; i++) {
+      formData.times[`t${i}`] = document.getElementById(`t${i}`).value;
+    }
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }
+
+  // Load form data from localStorage
+  function loadFormData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    
+    if (saved) {
+      try {
+        const formData = JSON.parse(saved);
+        
+        if (formData.reportDate) {
+          document.getElementById('reportDate').value = formData.reportDate;
+        }
+        
+        if (formData.rawTicket) {
+          document.getElementById('rawTicket').value = formData.rawTicket;
+        }
+        
+        if (formData.times) {
+          for (let i = 1; i <= 11; i++) {
+            if (formData.times[`t${i}`]) {
+              document.getElementById(`t${i}`).value = formData.times[`t${i}`];
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error loading saved data:', e);
+      }
+    }
+  }
+
+  // Add auto-save on input change
+  function setupAutoSave() {
+    document.getElementById('reportDate').addEventListener('change', saveFormData);
+    document.getElementById('rawTicket').addEventListener('input', saveFormData);
+    
+    for (let i = 1; i <= 11; i++) {
+      document.getElementById(`t${i}`).addEventListener('change', saveFormData);
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadFormData();
+    setupAutoSave();
+  });
 
   function captureTime(inputId) {
     const now = new Date();
@@ -417,6 +559,73 @@
   function clearAllTimes() {
     for (let i = 1; i <= 11; i++) {
       document.getElementById(`t${i}`).value = '';
+    }
+    saveFormData();
+  }
+
+  function clearSavedData() {
+    if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  }
+
+  function addNewReport() {
+    if (generatedReports.length === 0) {
+      showPopup('No Report', 'Please generate a report first before adding a new one!');
+      return;
+    }
+    
+    // Clear the form for a new entry
+    document.getElementById('reportDate').value = `${dd}/${mm}/${yyyy}`;
+    document.getElementById('rawTicket').value = '';
+    clearAllTimes();
+    document.getElementById('output').innerText = 'Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".';
+    
+    showPopup('New Report Ready', `You now have ${generatedReports.length} report(s) saved. Start filling in the new one!`);
+  }
+
+  function displayReportsHistory() {
+    if (generatedReports.length === 0) return;
+    
+    let historyHtml = '<div class="report-history"><strong>📋 Report History (' + generatedReports.length + ' reports):</strong><br>';
+    
+    generatedReports.forEach((report, index) => {
+      historyHtml += `<div class="report-item">
+        <div class="report-item-title">Report ${index + 1} - ${report.date}</div>
+        <div class="report-item-meta">Ticket: ${report.ticketNo || 'N/A'} | Faulty SN: ${report.faultySN || 'N/A'}</div>
+        <div class="report-item-buttons">
+          <button type="button" class="btn-view" onclick="loadReport(${index})">📖 View</button>
+          <button type="button" class="btn-delete" onclick="deleteReport(${index})">🗑️ Delete</button>
+        </div>
+      </div>`;
+    });
+    
+    historyHtml += '</div>';
+    document.getElementById('calculationOutput').innerHTML += historyHtml;
+  }
+
+  function loadReport(index) {
+    const report = generatedReports[index];
+    if (!report) return;
+    
+    // Display the report in the output area
+    document.getElementById('output').innerText = report.text;
+    
+    // Scroll to output
+    document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+    
+    showPopup('Report Loaded', `Loaded Report ${index + 1}`);
+  }
+
+  function deleteReport(index) {
+    if (confirm('Delete this report?')) {
+      generatedReports.splice(index, 1);
+      saveReports();
+      // Refresh the calculation area
+      document.getElementById('calculationOutput').innerHTML = '<div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>';
+      displayReportsHistory();
+      showPopup('Deleted', 'Report deleted successfully!');
     }
   }
 
@@ -609,6 +818,24 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
 
     document.getElementById('output').innerText = reportText;
     calculateSection4();
+
+    // Save this report to history
+    const newReport = {
+      date: dateStr,
+      ticketNo: parsed.ticketNo,
+      faultySN: parsed.faultySN,
+      text: reportText,
+      timestamp: new Date().toISOString()
+    };
+    
+    generatedReports.unshift(newReport); // Add to beginning of array
+    saveReports();
+    
+    // Refresh the history display
+    const calcOutput = document.getElementById('calculationOutput');
+    const tableAndSummary = calcOutput.innerHTML.split('<div style="margin-top: 15px;')[0]; // Get everything before history
+    calcOutput.innerHTML = tableAndSummary;
+    displayReportsHistory();
   }
 
   function buildExcelTable(dateStr, parsed, times) {
