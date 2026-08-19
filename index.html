@@ -339,6 +339,7 @@
 <div class="entry-tabs" id="entryTabs">
   <button type="button" class="entry-tab active" data-action="activate-tab" data-entry-id="1">1</button>
   <button type="button" class="entry-tab add-entry" data-action="add-entry" aria-label="Add another report">+</button>
+  <button type="button" class="btn-danger clear-all-data" data-action="clear-all-data">Clear All Data</button>
 </div>
 
 <div id="entriesContainer">
@@ -884,6 +885,36 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     document.getElementById('popupOverlay').classList.remove('visible');
   }
 
+  function clearAllData() {
+    if (!window.confirm('Clear all report data and timestamps?')) return;
+
+    document.querySelectorAll('.report-entry:not([data-entry-id="1"])').forEach((entry) => entry.remove());
+    document.querySelectorAll('.entry-tab:not([data-entry-id="1"]):not(.add-entry)').forEach((tab) => tab.remove());
+
+    const firstEntry = getEntryById(1);
+    if (!firstEntry) return;
+    firstEntry.querySelectorAll('[data-field]').forEach((field) => {
+      if ('value' in field) field.value = '';
+      else if (field.dataset.field === 'output') field.textContent = 'Paste your ticket message, click "NOW" for timestamps, then click "Generate Final Report".';
+      else if (field.dataset.field === 'calculationOutput') field.innerHTML = '<div class="calc-summary">Enter all event timestamps, then click <strong>Generate Final Report</strong> to calculate each step automatically.</div>';
+    });
+
+    setDefaultDateForEntry(firstEntry);
+    nextEntryId = 2;
+    activateTab(1, false);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+    }
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+    }
+    window.name = '';
+    history.replaceState(null, '', `${location.pathname}${location.search}`);
+    showPopup('Cleared', 'All report data has been cleared.');
+  }
+
   function copyExcelTable(entryId) {
     const rawText = getEntryValue(entryId, 'rawTicket');
     const parsed = parseTicketText(rawText);
@@ -950,6 +981,11 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
 
     if (action === 'close-popup') {
       closePopup();
+    }
+
+    if (action === 'clear-all-data') {
+      clearAllData();
+      return;
     }
 
     saveState();
