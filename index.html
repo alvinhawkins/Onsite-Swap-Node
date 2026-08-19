@@ -457,6 +457,32 @@
 <script>
   let nextEntryId = 2;
   const STORAGE_KEY = 'dct-replacement-report-state';
+  const WINDOW_STATE_PREFIX = 'dct-replacement-report:';
+
+  function writeSavedState(state) {
+    const serializedState = JSON.stringify(state);
+    try {
+      localStorage.setItem(STORAGE_KEY, serializedState);
+    } catch (error) {
+    }
+    try {
+      sessionStorage.setItem(STORAGE_KEY, serializedState);
+    } catch (error) {
+    }
+    window.name = WINDOW_STATE_PREFIX + serializedState;
+  }
+
+  function readSavedState() {
+    try {
+      const windowState = window.name.startsWith(WINDOW_STATE_PREFIX)
+        ? window.name.slice(WINDOW_STATE_PREFIX.length)
+        : '';
+      const savedState = windowState || localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
+      return savedState ? JSON.parse(savedState) : null;
+    } catch (error) {
+      return null;
+    }
+  }
 
   function saveState() {
     const entries = Array.from(document.querySelectorAll('.report-entry')).map((entry) => {
@@ -473,16 +499,11 @@
       };
     });
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nextEntryId, entries }));
+    writeSavedState({ nextEntryId, entries });
   }
 
   function restoreState() {
-    let savedState;
-    try {
-      savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    } catch (error) {
-      return;
-    }
+    const savedState = readSavedState();
 
     if (!savedState || !Array.isArray(savedState.entries)) return;
 
