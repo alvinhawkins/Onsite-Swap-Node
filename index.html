@@ -456,6 +456,64 @@
 
 <script>
   let nextEntryId = 2;
+  const STORAGE_KEY = 'dct-replacement-report-state';
+
+  function saveState() {
+    const entries = Array.from(document.querySelectorAll('.report-entry')).map((entry) => {
+      const fields = {};
+      entry.querySelectorAll('[data-field]').forEach((field) => {
+        const fieldName = field.dataset.field;
+        fields[fieldName] = field.value !== undefined ? field.value : field.innerHTML;
+      });
+
+      return {
+        id: Number(entry.dataset.entryId),
+        active: entry.classList.contains('active'),
+        fields
+      };
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nextEntryId, entries }));
+  }
+
+  function restoreState() {
+    let savedState;
+    try {
+      savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    } catch (error) {
+      return;
+    }
+
+    if (!savedState || !Array.isArray(savedState.entries)) return;
+
+    const firstEntry = document.querySelector('.report-entry');
+    if (!firstEntry) return;
+
+    savedState.entries.slice(1).forEach((savedEntry) => {
+      addEntry(false);
+      const newEntry = getEntryById(savedEntry.id);
+      const newTab = document.querySelector(`.entry-tab[data-entry-id="${savedEntry.id}"]`);
+      if (!newEntry || !newTab) return;
+      newEntry.dataset.entryId = String(savedEntry.id);
+      newTab.dataset.entryId = String(savedEntry.id);
+      newTab.textContent = String(savedEntry.id);
+    });
+
+    savedState.entries.forEach((savedEntry) => {
+      const entry = getEntryById(savedEntry.id);
+      if (!entry) return;
+      Object.entries(savedEntry.fields || {}).forEach(([fieldName, value]) => {
+        const field = entry.querySelector(`[data-field="${fieldName}"]`);
+        if (!field) return;
+        if (field.value !== undefined) field.value = value;
+        else field.innerHTML = value;
+      });
+    });
+
+    nextEntryId = Math.max(Number(savedState.nextEntryId) || 2, ...savedState.entries.map((entry) => Number(entry.id) + 1));
+    const activeEntry = savedState.entries.find((entry) => entry.active) || savedState.entries[0];
+    activateTab(activeEntry.id);
+  }
 
   function setDefaultDateForEntry(entry) {
     const field = entry.querySelector('[data-field="reportDate"]');
@@ -494,9 +552,11 @@
       button.classList.toggle('active', isActive);
       button.setAttribute('aria-pressed', String(isActive));
     });
+
+    saveState();
   }
 
-  function addEntry() {
+  function addEntry(shouldSave = true) {
     const sourceEntry = document.querySelector('.report-entry');
     if (!sourceEntry) return;
 
@@ -545,6 +605,7 @@
     setDefaultDateForEntry(clone);
     activateTab(entryId);
     nextEntryId += 1;
+    if (shouldSave) saveState();
   }
 
   function captureTime(entryId, fieldName) {
@@ -554,6 +615,7 @@
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     input.value = `${hours}:${minutes}`;
+    saveState();
   }
 
   function clearAllTimes(entryId) {
@@ -561,6 +623,7 @@
       const field = getFieldByName(entryId, `t${i}`);
       if (field) field.value = '';
     }
+    saveState();
   }
 
   function parseTicketText(rawText) {
@@ -839,7 +902,11 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     }
   });
 
+  document.addEventListener('input', saveState);
+  document.addEventListener('change', saveState);
+
   setDefaultDateForEntry(document.querySelector('.report-entry'));
+  restoreState();
 </script>
 
 </body>
