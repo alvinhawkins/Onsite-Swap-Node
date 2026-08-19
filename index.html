@@ -463,9 +463,7 @@
       const fields = {};
       entry.querySelectorAll('[data-field]').forEach((field) => {
         const fieldName = field.dataset.field;
-        fields[fieldName] = field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
-          ? field.value
-          : field.innerHTML;
+        fields[fieldName] = 'value' in field ? field.value : field.innerHTML;
       });
 
       return {
@@ -902,6 +900,8 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     if (action === 'close-popup') {
       closePopup();
     }
+
+    saveState();
   });
 
   document.addEventListener('input', saveState);
