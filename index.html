@@ -458,6 +458,35 @@
   let nextEntryId = 2;
   const STORAGE_KEY = 'dct-replacement-report-state';
   const WINDOW_STATE_PREFIX = 'dct-replacement-report:';
+  const URL_TIMES_PREFIX = 'dct-times=';
+
+  function saveTimesToUrl() {
+    const activeEntry = document.querySelector('.report-entry.active');
+    if (!activeEntry) return;
+
+    const times = {};
+    activeEntry.querySelectorAll('input[type="time"][data-field]').forEach((field) => {
+      times[field.dataset.field] = field.value;
+    });
+
+    const encodedTimes = encodeURIComponent(JSON.stringify(times));
+    history.replaceState(null, '', `${location.pathname}${location.search}#${URL_TIMES_PREFIX}${encodedTimes}`);
+  }
+
+  function restoreTimesFromUrl() {
+    if (!location.hash.startsWith(`#${URL_TIMES_PREFIX}`)) return;
+
+    try {
+      const times = JSON.parse(decodeURIComponent(location.hash.slice(URL_TIMES_PREFIX.length + 1)));
+      const activeEntry = document.querySelector('.report-entry.active');
+      if (!activeEntry || !times) return;
+      Object.entries(times).forEach(([fieldName, value]) => {
+        const field = activeEntry.querySelector(`[data-field="${fieldName}"]`);
+        if (field && field.type === 'time') field.value = value;
+      });
+    } catch (error) {
+    }
+  }
 
   function writeSavedState(state) {
     const serializedState = JSON.stringify(state);
@@ -500,6 +529,7 @@
     });
 
     writeSavedState({ nextEntryId, entries });
+    saveTimesToUrl();
   }
 
   function restoreState() {
@@ -533,7 +563,7 @@
 
     nextEntryId = Math.max(Number(savedState.nextEntryId) || 2, ...savedState.entries.map((entry) => Number(entry.id) + 1));
     const activeEntry = savedState.entries.find((entry) => entry.active) || savedState.entries[0];
-    activateTab(activeEntry.id);
+    activateTab(activeEntry.id, false);
   }
 
   function setDefaultDateForEntry(entry) {
@@ -563,7 +593,7 @@
     return field.value !== undefined ? field.value.trim() : (field.textContent || '').trim();
   }
 
-  function activateTab(entryId) {
+  function activateTab(entryId, shouldSave = true) {
     document.querySelectorAll('.report-entry').forEach((entry) => {
       entry.classList.toggle('active', Number(entry.dataset.entryId) === Number(entryId));
     });
@@ -574,7 +604,7 @@
       button.setAttribute('aria-pressed', String(isActive));
     });
 
-    saveState();
+    if (shouldSave) saveState();
   }
 
   function addEntry(shouldSave = true) {
@@ -624,7 +654,7 @@
     addButton.before(tabButton);
     document.getElementById('entriesContainer').appendChild(clone);
     setDefaultDateForEntry(clone);
-    activateTab(entryId);
+    activateTab(entryId, shouldSave);
     nextEntryId += 1;
     if (shouldSave) saveState();
   }
@@ -931,6 +961,7 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
 
   setDefaultDateForEntry(document.querySelector('.report-entry'));
   restoreState();
+  restoreTimesFromUrl();
 </script>
 
 </body>
