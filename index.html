@@ -406,19 +406,24 @@
             <button type="button" class="btn-now" data-action="capture-time" data-field="t8" data-entry-id="1">NOW</button>
           </div>
           <div class="time-row">
-            <label>9. Titan go back to backup rack</label>
+            <label>9. Titan Finish Check CPU & GPU Temperature</label>
             <input type="time" id="t9-1" data-field="t9">
             <button type="button" class="btn-now" data-action="capture-time" data-field="t9" data-entry-id="1">NOW</button>
           </div>
           <div class="time-row">
-            <label>10. Titan arrived at backup rack</label>
+            <label>10. Titan go back to backup rack</label>
             <input type="time" id="t10-1" data-field="t10">
             <button type="button" class="btn-now" data-action="capture-time" data-field="t10" data-entry-id="1">NOW</button>
           </div>
           <div class="time-row">
-            <label>11. Titan go out from datahall</label>
+            <label>11. Titan arrived at backup rack</label>
             <input type="time" id="t11-1" data-field="t11">
             <button type="button" class="btn-now" data-action="capture-time" data-field="t11" data-entry-id="1">NOW</button>
+          </div>
+          <div class="time-row">
+            <label>12. Titan go out from datahall</label>
+            <input type="time" id="t12-1" data-field="t12">
+            <button type="button" class="btn-now" data-action="capture-time" data-field="t12" data-entry-id="1">NOW</button>
           </div>
         </div>
 
@@ -671,7 +676,7 @@
   }
 
   function clearAllTimes(entryId) {
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 12; i++) {
       const field = getFieldByName(entryId, `t${i}`);
       if (field) field.value = '';
     }
@@ -716,16 +721,17 @@
   }
 
   const calculationSteps = [
-    { no: 1, label: 'DCT chat -> Titan respond', expected: '5 min', min: 0, max: 5 },
-    { no: 2, label: 'Titan respond -> pass security', expected: '10-15 min', min: 10, max: 15, reason: 'Waiting for security guard' },
-    { no: 3, label: 'pass security -> Start taking out the backup CT/ST', expected: '5-10 min', min: 5, max: 10 },
-    { no: 4, label: 'Finish take out backup CT/ST', expected: '5 min', min: 0, max: 5 },
-    { no: 5, label: 'backup rack -> faulty rack', expected: '10-15 min / time uncertain', min: 0, max: null },
-    { no: 6, label: 'arrive faulty rack -> start take out faulty CT/ST', expected: '5-10 min', min: 5, max: 10 },
-    { no: 7, label: 'start takeout faulty CT/ST -> finish faulty CT/ST replacement', expected: '5 min', min: 0, max: 5 },
-    { no: 8, label: 'mount backup CT/ST -> go back backup rack', expected: '10-20 min', min: 10, max: 20 },
-    { no: 9, label: 'faulty rack -> backup rack', expected: '10-15 min / time uncertain', min: 0, max: null },
-    { no: 10, label: 'arrive backup rack -> go out datahall', expected: '10-15 min', min: 10, max: 15 }
+    { no: 1, label: 'DCT & Aivres received notification', expected: '5 min', min: 0, max: 5 },
+    { no: 2, label: 'Office to Datahall & Pass Security', expected: '10-15 min', min: 10, max: 15, reason: 'Waiting for security guard' },
+    { no: 3, label: 'Arrive at backup rack, DCT scan PDA & unplug cables', expected: '5-10 min', min: 5, max: 10 },
+    { no: 4, label: 'Aivres (Titan) take out backup machine', expected: '5 min', min: 0, max: 5 },
+    { no: 5, label: 'Transport backup machine to faulty rack', expected: '10-15 min / time uncertain', min: 0, max: null },
+    { no: 6, label: 'DCT scan faulty machine & unplug cables', expected: '5-10 min', min: 5, max: 10 },
+    { no: 7, label: 'Aivres (Titan) unmount faulty & mount backup machine', expected: '5 min', min: 0, max: 5 },
+    { no: 8, label: 'Connect out-of-band management & test CPU temp', expected: '5-10 min', min: 5, max: 10 },
+    { no: 9, label: 'DCT plug back optics/cables & power on machine', expected: '10-20 min', min: 10, max: 20 },
+    { no: 10, label: 'Transport faulty machine back & mount into backup rack', expected: '10-15 min / time uncertain', min: 0, max: null },
+    { no: 11, label: 'DCT scan machine/optics to close ticket & exit', expected: '10-15 min', min: 10, max: 15 }
   ];
 
   function timeToMinutes(value) {
@@ -750,7 +756,7 @@
 
   function calculateSection4(entryId) {
     const times = [];
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 12; i++) {
       times.push(getEntryValue(entryId, `t${i}`));
     }
 
@@ -834,6 +840,7 @@
     const t9 = getTimeVal('t9');
     const t10 = getTimeVal('t10');
     const t11 = getTimeVal('t11');
+    const t12 = getTimeVal('t12');
 
     const reportText = `Date: ${dateStr}
 
@@ -845,9 +852,10 @@
 6. Arrived at faulty rack - ${t6}
 7. Titan start take out faulty CT/ST - ${t7}
 8. Titan finish mount backup CT/ST - ${t8}
-9. Titan go back to backup rack - ${t9}
-10. Titan arrived at backup rack - ${t10}
-11. Titan go out from datahall - ${t11}
+9. Titan finish Check CPU & GPU Temperature - ${t9}
+9. Titan go back to backup rack - ${t10}
+10. Titan arrived at backup rack - ${t11}
+11. Titan go out from datahall - ${t12}
 
 Cust Ticket No: ${parsed.ticketNo}
 
@@ -919,7 +927,7 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     const rawText = getEntryValue(entryId, 'rawTicket');
     const parsed = parseTicketText(rawText);
     const times = [];
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 12; i++) {
       times.push(getEntryValue(entryId, `t${i}`));
     }
 
