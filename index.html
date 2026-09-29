@@ -943,7 +943,7 @@ Faulty Location: ${parsed.faultyRoom}, Rack: ${parsed.faultyRack}, Slot: ${parse
     const outputField = getFieldByName(entryId, 'output');
     if (!outputField) return;
 
-    navigator.clipboard.writeText(outputField.textContent).then(() => {
+      navigator.clipboard.writeText(outputField.innerText).then(() => {
       showPopup('Copied', 'Report copied to clipboard!');
     }).catch((err) => {
       showPopup('Copy failed', 'Failed to copy: ' + err);
